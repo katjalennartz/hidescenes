@@ -28,7 +28,7 @@ Mit diesem Plugin könnt ihr Szenen verstecken.
   
 
 ### eingefügte Tabellenspalten
-### threads:
+#### threads:
   **hidescene_readable** - int(1) NOT NULL DEFAULT 1  
     0: komplett verstecken  
     1: Szenentital/szeneninfos werden gezeigt  
