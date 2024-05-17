@@ -15,8 +15,11 @@ Mit diesem Plugin könnt ihr Szenen verstecken.
   - Der User darf das pro Szene entscheiden
 
 
-## Änderungen
+## Änderungen die das plugin vornimmt
 ### eingefügte variablen:
+Die Variablen sollten eigentlich automatisch eingefügt werden, hat hier etwas nicht funktioniert, könnt ihr hier nachschauen was getan werden muss. 
+
+    
   **forumdisplay_thread**  
   ```<tr class="inline_row">```   
     ersetzt mit:   
@@ -25,6 +28,22 @@ Mit diesem Plugin könnt ihr Szenen verstecken.
  ```<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>```  
  ersetzt mit  
  ```{$hidewrap_start}<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>{$hidewrap_end}```
+
+  ***search_results_threads_thread***   
+  ```<tr class="inline_row">```   
+    ersetzt mit:   
+  ```<tr class="inline_row" {$hiderow}>```  
+  
+    
+ ```<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>```  
+ ersetzt mit  
+ ```{$hidewrap_start}<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>{$hidewrap_end}```    
+    
+    
+  ***newthread***   
+  ```{$posticons}```   
+  ersetzen mit
+ ```{$hidescenes_newthread}{$posticons} ```   
   
 
 ### eingefügte Tabellenspalten
