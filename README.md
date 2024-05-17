@@ -10,7 +10,7 @@ Mit diesem Plugin könnt ihr Szenen verstecken.
 - Gruppen die alle Szenen immer sehen kann
 - Ingamebereich/Archiv
 - Wie soll versteckt werden
-- - Komplett
+  - Komplett
   - Die Szene kann nicht gelesen werden, Titel/Teilnemer und Szeneninfos werden gezeigt
   - Der User darf das pro Szene entscheiden
 
