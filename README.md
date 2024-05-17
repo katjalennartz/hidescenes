@@ -1,5 +1,7 @@
 # verstecke Szenen
-Mit diesem Plugin könnt ihr Szenen verstecken.  
+Mit diesem Plugin können einzelne Szenen bewusst versteckt werden und so 'geheim' bleiben. Entweder können sie für alle 'nicht Teilnehmenden' komplett versteckt werden, oder sie nur nicht mehr lesbar gemacht werden. (Szeneninfos werden noch angezeigt).
+
+    
 ## Kompatibel mit:
 - Szenentracker von risuena
 - Inplaytracker 2.0 von Jule
@@ -18,7 +20,7 @@ Mit diesem Plugin könnt ihr Szenen verstecken.
 ## Änderungen die das plugin vornimmt
 ### eingefügte variablen:
 Die Variablen sollten eigentlich automatisch eingefügt werden, hat hier etwas nicht funktioniert, könnt ihr hier nachschauen was getan werden muss. 
-
+  
     
   **forumdisplay_thread**  
   ```<tr class="inline_row">```   
@@ -28,24 +30,30 @@ Die Variablen sollten eigentlich automatisch eingefügt werden, hat hier etwas n
  ```<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>```  
  ersetzt mit  
  ```{$hidewrap_start}<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>{$hidewrap_end}```
-
+  
+  
   ***search_results_threads_thread***   
   ```<tr class="inline_row">```   
     ersetzt mit:   
   ```<tr class="inline_row" {$hiderow}>```  
-  
+    
     
  ```<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>```  
  ersetzt mit  
  ```{$hidewrap_start}<a href="{$thread['lastpostlink']}">{$lang->lastpost}</a>: {$lastposterlink}</span>{$hidewrap_end}```    
-    
-    
+      
+      
   ***newthread***   
   ```{$posticons}```   
-  ersetzen mit
- ```{$hidescenes_newthread}{$posticons} ```   
+  ersetzen mit  
+ ```{$hidescenes_newthread}{$posticons} ```    
+    
+  ***member_profile***   
+  ```{$footer}```   
+  ersetzen mit  
+   ```{$footer}{$hidescene_js} ```    
+    
   
-
 ### eingefügte Tabellenspalten
 #### threads:
   **hidescene_readable** - int(1) NOT NULL DEFAULT 1  
