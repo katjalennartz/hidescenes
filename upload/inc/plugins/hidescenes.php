@@ -73,6 +73,11 @@ function hidescenes_activate()
 
   //member profile
   find_replace_templatesets("member_profile", "#" . preg_quote('{$footer}') . "#i", '{$hidescene_js}{$footer}');
+
+  //adding a unique class name to tracker items in ipt 2.0 - we need it for our Javascript!
+  if ($db->num_rows($db->simple_select("templates", "title", "title = 'member_profile_inplaytracker_bit'")) > 0) {
+    find_replace_templatesets("member_profile_inplaytracker_bit", "#" . preg_quote('trow1') . "#i", 'trow1 ipt-jule');
+  }
 }
 
 function hidescenes_is_installed()
@@ -121,8 +126,13 @@ function hidescenes_deactivate()
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
 
   find_replace_templatesets("newthread", "#" . preg_quote('{$hidescenes_newthread}') . "#i", '');
-  
+
   find_replace_templatesets("member_profile", "#" . preg_quote('{$hidescene_js}') . "#i", '');
+
+  //adding a unique class name to tracker items in ipt 2.0 - we need it for our Javascript!
+  if ($db->num_rows($db->simple_select("templates", "title", "title = 'member_profile_inplaytracker_bit'")) > 0) {
+    find_replace_templatesets("member_profile_inplaytracker_bit", "#" . preg_quote(' ipt-jule') . "#i", '');
+  }
 }
 
 function hidescenes_addsettings($type = 'install')
@@ -156,6 +166,13 @@ function hidescenes_addsettings($type = 'install')
       'optionscode' => "select\n0=komplett verstecken\n1=Titel, wiw etc. anzeigen, nicht die Szene selbst\n2=user entscheiden",
       'value' => '1', // Default
       'disporder' => 4
+    ),
+    'hidescenes_profile' => array(
+      'title' => 'Szenen im Profil',
+      'description' => 'Sollen die Szenen auch im Profil versteckt werden?',
+      'optionscode' => "yesno",
+      'value' => '1', // Default
+      'disporder' => 5
     ),
   );
 
@@ -250,10 +267,9 @@ function hidescenes_newthread()
   }
 }
 
-/********************************
+/**
  * Thread speichern
- * 
- *******************************/
+ **/
 $plugins->add_hook("newthread_do_newthread_end", "hidescenes_do_newthread");
 function hidescenes_do_newthread()
 {
@@ -284,9 +300,9 @@ function hidescenes_do_newthread()
   }
 }
 
-/*********************************
- * Thread editieren 
- *********************************/
+/**
+ * Thread editieren - ansicht
+ **/
 $plugins->add_hook("editpost_end", "hidescenes_editpost", 40);
 function hidescenes_editpost()
 {
@@ -331,6 +347,10 @@ function hidescenes_editpost()
     }
   }
 }
+
+/**
+ * Thread editieren - speichern
+ **/
 $plugins->add_hook("editpost_do_editpost_end", "hidescenes_do_editpost");
 function hidescenes_do_editpost()
 {
@@ -361,7 +381,9 @@ function hidescenes_do_editpost()
   }
 }
 
-// Forumdisplay - Anzeige von verstecken Threads bzw. verstecken
+/**
+ * Forumdisplay - Anzeige von verstecken Threads bzw. verstecken
+ **/
 $plugins->add_hook("forumdisplay_thread_end", "hidescenes_forumdisplay_thread_end", 10);
 function hidescenes_forumdisplay_thread_end()
 {
@@ -413,7 +435,9 @@ function hidescenes_forumdisplay_thread_end()
     $thread['subject'] .= $lang->hidescenes_ishidden;
   }
 }
-
+/**
+ * Showthread - Gesamten Thread verstecken
+ **/
 $plugins->add_hook("showthread_start", "hidescenes_showthread");
 function hidescenes_showthread()
 {
@@ -428,7 +452,10 @@ function hidescenes_showthread()
   }
 }
 
-//Suchergebnisse verstecken
+
+/**
+ * Suchergebnisse verstecken
+ **/
 $plugins->add_hook("search_results_thread", "hidescenes_search_results_thread");
 function hidescenes_search_results_thread()
 {
@@ -489,6 +516,9 @@ function hidescenes_search_results_thread()
   }
 }
 
+/**
+ * Wer ist online verstecken
+ **/
 $plugins->add_hook("build_friendly_wol_location_end", "hidescenes_online_location");
 function hidescenes_online_location($plugin_array)
 {
@@ -504,12 +534,16 @@ function hidescenes_online_location($plugin_array)
 }
 
 
-//evt. im tracker verstecken wenns geht - notfall mit javascript? 
 
+
+/**
+ * Memberprofile Szenen verstecken
+ **/
 $plugins->add_hook("member_profile_end", "hidescenes_member_profile_end");
 function hidescenes_member_profile_end()
 {
-  global $hidescene_js, $mybb, $db, $memprofile;
+  global $hidescene_js, $mybb, $db, $memprofile, $lang;
+  $lang->load("hidescenes");
 
   $hidetype = $mybb->settings['hidescenes_type'];
 
@@ -522,62 +556,78 @@ function hidescenes_member_profile_end()
     $get_scenes = $db->write_query("SELECT * FROM `" . TABLE_PREFIX . "threads` t LEFT JOIN " . TABLE_PREFIX . "ipt_scenes_partners p ON p.tid = t.tid WHERE p.uid = 3 and hidescene_readable = 0;");
   }
 
+  if ($mybb->settings['hidescenes_tracker'] == 0) {
+    $js_selector = ".scenetracker.scenebit";
+  } elseif ($mybb->settings['hidescenes_tracker'] == 1) {
+    $js_selector = ".ipt-jule";
+  } elseif ($mybb->settings['hidescenes_tracker'] == 2) {
+    $js_selector = ".ipbit";
+  }
+
   $hidescene_js = "<script>
   $(document).ready(function () {";
 
   while ($thread = $db->fetch_array($get_scenes)) {
 
-    if ($hidetype == 0 || ($hidetype == 2 && $thread['hidescene_type'] == 0)) {
-      // scenetracker__sceneitem
-      if ($mybb->settings['hidescenes_tracker'] == 0) {
+    //Info, dass die Szene versteckt ist
+    $hidescene_js .= "
+      //info, dass szene versteckt ist (auch für die, die lesen dürfen)
+      var sceneItems = $('" . $js_selector . "');
+      // Nur die Div Boxen filtern, die einen Link mit der URL 'tid=X' enthalten
+      var filteredSceneItems = sceneItems.filter(function() {
+        // Überprüfe, ob der Link innerhalb dieser Div-Box die URL 'tid=X' enthält
+        return $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').length > 0;
+      });
+      // über die Div Boxen gehen
+      filteredSceneItems.each(function() {
+        // Info, dass Szene versteck ist hinzufügen
+        $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').after('<span class=\"hideinfo\">" . $lang->hidescenes_ishidden . "</span>');
+      }); 
+
+      ";
+
+    if (!hidescenes_allowed_to_see($thread)) {
+      if ($hidetype == 0 || ($hidetype == 2 && $thread['hidescene_type'] == 0)) {
+        // scenetracker.scenebit ->  löschen
         $hidescene_js .= "
-          var sceneItems = $('.scenetracker.scenebit');
+        //Szene komplett löschen
+          var sceneItems = $('" . $js_selector . "');
           // Nur die Div Boxen filtern, die einen Link mit der URL 'tid=X' enthalten
           var filteredSceneItems = sceneItems.filter(function() {
               // Überprüfe, ob der Link innerhalb dieser Div-Box die URL 'tid=X' enthält
-              return $(this).find('a[href*=\"tid=" . $thread['tid'] . "\"]').length > 0;
+              return $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').length > 0;
           });
-
           // über die Div Boxen gehen
           filteredSceneItems.each(function() {
               // Eintrag löschen
               $(this).remove();
           });
-      ";
-      } elseif ($mybb->settings['hidescenes_tracker'] == 1) {
+
+
+          ";
+      }
+      //Szeneninfos angezeigt lassen  - aber link nicht mehr anklickbar
+      if ($hidetype == 1 || ($hidetype == 2 && $thread['hidescene_type'] == 1)) {
         $hidescene_js .= "
-        var sceneItems = $('.trow1');
-        // Nur die Div Boxen filtern, die einen Link mit der URL 'tid=X' enthalten
-        var filteredSceneItems = sceneItems.filter(function() {
-            // Überprüfe, ob der Link innerhalb dieser Div-Box die URL 'tid=X' enthält
-            return $(this).find('a[href*=\"tid=" . $thread['tid'] . "\"]').length > 0;
-        });
-  
-        // über die Div Boxen gehen
-        filteredSceneItems.each(function() {
-            // Eintrag löschen
-            $(this).remove();
-        });
-    ";
-      } elseif ($mybb->settings['hidescenes_tracker'] == 2) {
-        $hidescene_js .= "
-        var sceneItems = $('.ipbit');
-        // Nur die Div Boxen filtern, die einen Link mit der URL 'tid=X' enthalten
-        var filteredSceneItems = sceneItems.filter(function() {
-            // Überprüfe, ob der Link innerhalb dieser Div-Box die URL 'tid=X' enthält
-            return $(this).find('a[href*=\"tid=" . $thread['tid'] . "\"]').length > 0;
-        });
-  
-        // über die Div Boxen gehen
-        filteredSceneItems.each(function() {
-            // Eintrag löschen
-            $(this).remove();
-        });
-    ";
+        //Szeneninfos angezeigt lassen  - aber link nicht mehr anklickbar
+          var sceneItems = $('" . $js_selector . "');
+          // Nur die Div Boxen filtern, die einen Link mit der URL 'tid=X' enthalten
+          var filteredSceneItems = sceneItems.filter(function() {
+              // Überprüfe, ob der Link innerhalb dieser Div-Box die URL 'tid=X' enthält
+              return $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').length > 0;
+          });
+          // über die Div Boxen gehen
+          filteredSceneItems.each(function() {
+              //link nicht klickbar machen
+              $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').attr('onclick', 'return false;');
+              $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').attr('href', '#');
+            });
+
+
+        ";
       }
     }
   }
-
   $hidescene_js .= "}); </script>";
 }
 
@@ -593,17 +643,15 @@ function hidescenes_testParentFid($fid)
   //die parents des forums holen in dem wir sind.
   $parents = $db->fetch_field($db->write_query("SELECT CONCAT(',',parentlist,',') as parents FROM " . TABLE_PREFIX . "forums WHERE fid = $fid"), "parents");
   $ingame = $mybb->settings['hidescenes_ingame'];
-
   $ingameexplode = explode(",", $ingame);
   //array durchgehen und testen ob gewolltes forum in der parentlist ist.
   foreach ($ingameexplode as $ingamefid) {
     //jetzt holen wir uns die parentliste des aktuellen forums und testen, ob die parentid enthalten ist. wenn ja, dann sind wir richtig
     if (strpos($parents, "," . $ingamefid . ",") !== false) {
       return true;
-    } else {
-      return false;
     }
   }
+  return false;
 }
 
 /**
