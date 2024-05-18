@@ -167,13 +167,6 @@ function hidescenes_addsettings($type = 'install')
       'value' => '1', // Default
       'disporder' => 4
     ),
-    'hidescenes_profile' => array(
-      'title' => 'Szenen im Profil',
-      'description' => 'Sollen die Szenen auch im Profil versteckt werden?',
-      'optionscode' => "yesno",
-      'value' => '1', // Default
-      'disporder' => 5
-    ),
   );
 
   $gid = $db->fetch_field($db->write_query("SELECT gid FROM `" . TABLE_PREFIX . "settinggroups` WHERE name like 'hidescenes%' LIMIT 1;"), "gid");
