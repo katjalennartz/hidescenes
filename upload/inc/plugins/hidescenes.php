@@ -636,6 +636,7 @@ function hidescenes_testParentFid($fid)
   //die parents des forums holen in dem wir sind.
   $parents = $db->fetch_field($db->write_query("SELECT CONCAT(',',parentlist,',') as parents FROM " . TABLE_PREFIX . "forums WHERE fid = $fid"), "parents");
   $ingame = $mybb->settings['hidescenes_ingame'];
+  if ($ingame == '-1') return true; //alle foren aktiviert
   $ingameexplode = explode(",", $ingame);
   //array durchgehen und testen ob gewolltes forum in der parentlist ist.
   foreach ($ingameexplode as $ingamefid) {
@@ -726,8 +727,8 @@ function hidescenes_allowed_to_see($thread)
 
   //welche gruppen dürfen immer sehen? 
   $allowedgroups = $mybb->settings['hidescenes_group'];
-  if (is_member($allowedgroups, $thisuser)) {
-    // return true;
+  if (is_member($allowedgroups, $thisuser) || $allowedgroups == '-1') {
+    return true;
   }
 
   return false;
