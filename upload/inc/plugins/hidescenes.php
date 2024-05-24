@@ -57,7 +57,7 @@ function hidescenes_install()
 
 function hidescenes_activate()
 {
-
+  global $db, $mybb;
   //Variablen einfügen
   include MYBB_ROOT . "/inc/adminfunctions_templates.php";
   //forumdisplay
@@ -115,6 +115,7 @@ function hidescenes_uninstall()
 
 function hidescenes_deactivate()
 {
+  global $db, $mybb;
   //Variablen löschen
   include MYBB_ROOT . "/inc/adminfunctions_templates.php";
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('{$hiderow}') . "#i", '');
