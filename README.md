@@ -51,8 +51,15 @@ Die Variablen sollten eigentlich automatisch eingefügt werden, hat hier etwas n
   ***member_profile***   
   ```{$footer}```   
   ersetzen mit  
-   ```{$footer}{$hidescene_js} ```    
-    
+   ```{$footer}{$hidescene_js} ```   
+     
+***member_profile_inplaytracker_bit***  
+
+***Achtung, das ist nur beim IPT 2.0 nötig (dafür aber zwingend, damit das Javascript und das verstecken der Szenen funktioniert***
+    ```class="trow1"```   
+  ersetzen mit  
+   ```class="trow1 ipt-jule"```   
+   
   
 ### eingefügte Tabellenspalten
 #### threads:
