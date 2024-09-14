@@ -170,7 +170,7 @@ function hidescenes_addsettings($type = 'install')
     ),
   );
 
-  $gid = $db->fetch_field($db->write_query("SELECT gid FROM `" . TABLE_PREFIX . "settinggroups` WHERE name like 'hidescenes%' LIMIT 1;"), "gid");
+  $gid = $db->fetch_field($db->write_query("SELECT gid FROM `" . TABLE_PREFIX . "settinggroups` WHERE name like 'hidescenes' LIMIT 1;"), "gid");
 
   if ($type == 'install') {
     foreach ($setting_array as $name => $setting) {
@@ -547,7 +547,7 @@ function hidescenes_member_profile_end()
   } elseif ($mybb->settings['hidescenes_tracker'] == 1) {
     $get_scenes = $db->simple_select("threads", "*", "partners like '%" . $memprofile['username'] . "%' AND hidescene_readable = 0");
   } elseif ($mybb->settings['hidescenes_tracker'] == 2) {
-    $get_scenes = $db->write_query("SELECT * FROM `" . TABLE_PREFIX . "threads` t LEFT JOIN " . TABLE_PREFIX . "ipt_scenes_partners p ON p.tid = t.tid WHERE p.uid = 3 and hidescene_readable = 0;");
+    $get_scenes = $db->write_query("SELECT * FROM `" . TABLE_PREFIX . "threads` t LEFT JOIN " . TABLE_PREFIX . "ipt_scenes_partners p ON p.tid = t.tid WHERE p.uid = " . $memprofile['uid'] . " and hidescene_readable = 0;");
   }
 
   if ($mybb->settings['hidescenes_tracker'] == 0) {
