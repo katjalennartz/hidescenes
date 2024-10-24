@@ -350,7 +350,6 @@ function hidescenes_editpost()
           $user_select_all = "";
           $user_select_infos = "";
         } else {
-          echo "hai " . $thread['hidescene_type'];
           if ($thread['hidescene_type'] == 0) {
             $user_select_all = "selected";
             $user_select_infos = "";
@@ -420,6 +419,7 @@ function hidescenes_forumdisplay_thread_end()
   $hiderow = "";
   $fid = $mybb->get_input("fid", MyBB::INPUT_INT);
   $hidetype = $mybb->settings['hidescenes_type'];
+
   // Anzeigen, dass die Szene für einen versteckt ist
   if ($thread['hidescene_readable'] == 0 && hidescenes_testParentFid($fid)) {
     $hideclass = "hidescenes_own";
@@ -569,9 +569,6 @@ function hidescenes_online_location($plugin_array)
   return $plugin_array;
 }
 
-
-
-
 /**
  * Memberprofile Szenen verstecken
  **/
@@ -604,7 +601,6 @@ function hidescenes_member_profile_end()
   $(document).ready(function () {";
 
   while ($thread = $db->fetch_array($get_scenes)) {
-
     //Info, dass die Szene versteckt ist
     $hidescene_js .= "
       //info, dass szene versteckt ist (auch für die, die lesen dürfen)
