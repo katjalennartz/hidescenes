@@ -62,14 +62,19 @@ function hidescenes_activate()
   include MYBB_ROOT . "/inc/adminfunctions_templates.php";
   //forumdisplay
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
-  find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '{$hidewrap_start}<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>{$hidewrap_end}');
+  find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '<a href="{$thread[\'lastpostlink\']}">{$hidewrap_start}{$lang->lastpost}{$hidewrap_end}</a>: {$lastposterlink}</span>');
+
+  find_replace_templatesets("search_results_threads", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
+  
+  find_replace_templatesets("forumdisplay", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
 
   //suche
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
-  find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '{$hidewrap_start}<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>{$hidewrap_end}');
+  find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '<a href="{$thread[\'lastpostlink\']}">{$hidewrap_start}{$lang->lastpost}{$hidewrap_end}</a>: {$lastposterlink}</span>');
 
   //inputs newthread/edit
   find_replace_templatesets("newthread", "#" . preg_quote('{$posticons}') . "#i", '{$hidescenes_newthread}{$posticons}');
+  find_replace_templatesets("editpost", "#" . preg_quote('{$posticons}') . "#i", '{$hidescenes_newthread}{$posticons}');
 
   //member profile
   find_replace_templatesets("member_profile", "#" . preg_quote('{$footer}') . "#i", '{$hidescene_js}{$footer}');
@@ -121,12 +126,15 @@ function hidescenes_deactivate()
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('{$hiderow}') . "#i", '');
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('{$hidewrap_start}') . "#i", '');
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
-
+  find_replace_templatesets("forumdisplay", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
+  find_replace_templatesets("search_results_threads", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
+  
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hiderow}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_start}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
 
   find_replace_templatesets("newthread", "#" . preg_quote('{$hidescenes_newthread}') . "#i", '');
+  find_replace_templatesets("editpost", "#" . preg_quote('{$hidescenes_newthread}') . "#i", '');
 
   find_replace_templatesets("member_profile", "#" . preg_quote('{$hidescene_js}') . "#i", '');
 
@@ -194,7 +202,7 @@ function hidescenes_addtemplates($type = 'install')
     $db->insert_query("templategroups", $templategrouparray);
   }
 
-  $template[0] = array(
+  $template[] = array(
     "title" => 'hidescenes_newthread_default',
     "template" => '<tr>
     <td class="trow2" width="20%" >
@@ -209,7 +217,8 @@ function hidescenes_addtemplates($type = 'install')
     "version" => "1.0",
     "dateline" => TIME_NOW
   );
-  $template[2] = array(
+
+  $template[] = array(
     "title" => 'hidescenes_newthread_user',
     "template" => '<tr>
     <td class="trow2" width="20%"  >
@@ -225,6 +234,28 @@ function hidescenes_addtemplates($type = 'install')
 
     </td>
   </tr>
+    ',
+    "sid" => "-2",
+    "version" => "1.0",
+    "dateline" => TIME_NOW
+  );
+
+  $template[] = array(
+    "title" => 'hidescenes_forumdisplay_js',
+    "template" => '<script type="text/javascript">
+	$(\\\'a\\\').has(\\\'span.hidescene\\\').each(function() {
+		// Holen wir den Inhalt des span-Elements
+		var spanContent = $(this).find(\\\'span.hidescene\\\').html();
+
+		// Ersetzen wir den Link mit dem span-Inhalt
+		$(this).replaceWith(\\\'<span class="hidescene">\\\' + spanContent + \\\'</span>\\\');
+	});
+
+	var spanContent = $(this).find(\\\'span.hidescene\\\').html();
+
+	// Ersetzen wir den Link mit dem span-Inhalt
+	$(this).replaceWith(\\\'<span class="hidescene">\\\' + spanContent + \\\'</span>\\\');
+</script>
     ',
     "sid" => "-2",
     "version" => "1.0",
@@ -308,7 +339,7 @@ function hidescenes_editpost()
 
       //default einstellungen admin
       if ($mybb->settings['hidescenes_type'] != 2) {
-        if ($thread['hidescene_readable'] == 0) {
+        if ($thread['hidescene_readable'] == 1) {
           $checked_default = "";
         } else {
           $checked_default = "checked";
@@ -391,6 +422,9 @@ function hidescenes_forumdisplay_thread_end()
   $hidetype = $mybb->settings['hidescenes_type'];
   // Anzeigen, dass die Szene für einen versteckt ist
   if ($thread['hidescene_readable'] == 0 && hidescenes_testParentFid($fid)) {
+    $hideclass = "hidescenes_own";
+    //Wir wollen immer die Info, dass die Szene versteckt ist
+    $thread['subject'] .= $lang->hidescenes_ishidden;
     //Teilnehmer dürfen immer sehen
     if (!hidescenes_allowed_to_see($thread)) {
       //komplett verstecken
@@ -403,9 +437,9 @@ function hidescenes_forumdisplay_thread_end()
         $thread['lastpostlink'] = "#";
         $lastposterlink = "";
         $thread['multipage'] = "";
-        $hidewrap_start = "<span style=\"display:none;\">";
+        $hidewrap_start = "<span class=\"nolink\" style=\"display:none;\">";
         $hidewrap_end = "</span>";
-        $thread['subject'] = "<span onclick=\"return false;\"></span>";
+        $thread['subject'] = "<span class=\"nolink\" onclick=\"return false;\"></span>";
         //empty ipt 3.0 and 2.0 sceneinfos ?
         $thread['profilelink'] = "";
         //empty szenentracker risuena 
@@ -419,15 +453,21 @@ function hidescenes_forumdisplay_thread_end()
         $thread['lastpostlink'] = "#";
         $thread['multipage'] = "";
         //damit man nicht auf den Link klicken kann
-        $hidewrap_start = "<span onclick=\"return false;\">";
+        $hidewrap_start = "<span class=\"hidescene\" onclick=\"return false;\">";
         $hidewrap_end = "</span>";
         //link soll nicht mehr klickbar sein
-        $thread['subject'] = "<span onclick=\"return false;\">" . $thread['subject'] . " </span>";
+        $thread['subject'] = "<span class=\"hidescene\" onclick=\"return false;\">" . $thread['subject'] . " </span>";
       }
     }
-    //Wir wollen immer die Info, dass die Szene versteckt ist
-    $thread['subject'] .= $lang->hidescenes_ishidden;
   }
+}
+
+$plugins->add_hook("search_results_end", "hidescenes_forumdisplay_end");
+$plugins->add_hook("forumdisplay_end", "hidescenes_forumdisplay_end");
+function hidescenes_forumdisplay_end()
+{
+  global $templates, $hidescenes_forumdisplay_js;
+  eval("\$hidescenes_forumdisplay_js = \"" . $templates->get("hidescenes_forumdisplay_js") . "\";");
 }
 /**
  * Showthread - Gesamten Thread verstecken
@@ -465,11 +505,14 @@ function hidescenes_search_results_thread()
   $hidetype = $mybb->settings['hidescenes_type'];
   // Anzeigen, dass die Szene für einen versteckt ist
   if ($thread['hidescene_readable'] == 0 && hidescenes_testParentFid($fid)) {
+
+    //Wir wollen immer die Info, dass die Szene versteckt ist
+    $thread['subject'] .= $lang->hidescenes_ishidden;
     //Teilnehmer dürfen immer sehen
     if (!hidescenes_allowed_to_see($thread)) {
       //komplett verstecken
       if ($hidetype == 0 || ($hidetype == 2 && $thread['hidescene_type'] == 0)) {
-        //nur szeneninfos zeigen - zum einen verstecken wir die ganze reihe mit display none, 
+        //gar nicht zeiten- zum einen verstecken wir die ganze reihe mit display none, 
         // damit aber keiner pfuschen kann und in den HTML Code schaut, überschreiben wir auch die Variablen.
         $hiderow = " style=\"display:none;\" ";
         $thread_link = "#";
@@ -489,6 +532,7 @@ function hidescenes_search_results_thread()
         $sceneinfos = "";
       }
       //nur szeneninos anzeigen
+
       if ($hidetype == 1 || ($hidetype == 2 && $thread['hidescene_type'] == 1)) {
         //nur szeneninfos zeigen
         //wir wollen die linkadresse auch verstecken
@@ -499,14 +543,12 @@ function hidescenes_search_results_thread()
         $thread['multipage'] = "";
 
         //damit man nicht auf den Link klicken kann
-        $hidewrap_start = "<span onclick=\"return false;\">";
+        $hidewrap_start = "<span class=\"hidescene\" onclick=\"return false;\">";
         $hidewrap_end = "</span>";
         //link soll nicht mehr klickbar sein
-        $thread['subject'] = "<span onclick=\"return false;\">" . $thread['subject'] . " </span>";
+        $thread['subject'] = "<span class=\"hidescene\" onclick=\"return false;\">" . $thread['subject'] . " </span>";
       }
     }
-    //Wir wollen immer die Info, dass die Szene versteckt ist
-    $thread['subject'] .= $lang->hidescenes_ishidden;
   }
 }
 
@@ -558,7 +600,7 @@ function hidescenes_member_profile_end()
     $js_selector = ".ipbit";
   }
 
-  $hidescene_js = "<script>
+  $hidescene_js = "<script type=\"text/javascript\">
   $(document).ready(function () {";
 
   while ($thread = $db->fetch_array($get_scenes)) {
@@ -612,12 +654,10 @@ function hidescenes_member_profile_end()
           });
           // über die Div Boxen gehen
           filteredSceneItems.each(function() {
-              //link nicht klickbar machen
-              $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').attr('onclick', 'return false;');
-              $(this).find('a[href*=\"?tid=" . $thread['tid'] . "\"]').attr('href', '#');
+          // console.log($(this).find('a').html());
+          var spanContent = $(this).find('a[href*=\"?tid=\"]').html();
+          $(this).find('a[href*=\"?tid=\"]').replaceWith('<span class=\"hidescene\">' + spanContent + '</span>');
             });
-
-
         ";
       }
     }
