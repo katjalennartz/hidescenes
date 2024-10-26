@@ -65,7 +65,7 @@ function hidescenes_activate()
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '<a href="{$thread[\'lastpostlink\']}">{$hidewrap_start}{$lang->lastpost}{$hidewrap_end}</a>: {$lastposterlink}</span>');
 
   find_replace_templatesets("search_results_threads", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
-  
+
   find_replace_templatesets("forumdisplay", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
 
   //suche
@@ -128,7 +128,7 @@ function hidescenes_deactivate()
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
   find_replace_templatesets("forumdisplay", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
   find_replace_templatesets("search_results_threads", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
-  
+
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hiderow}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_start}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
@@ -401,6 +401,37 @@ function hidescenes_do_editpost()
         }
         $db->update_query("threads", $save, "tid='{$tid}'");
       }
+    }
+  }
+}
+
+
+$plugins->add_hook("build_forumbits_forum", "hidescenes_build_forumbits_forum");
+function hidescenes_build_forumbits_forum(&$forum)
+{
+  global $db;
+  $forum['hidescene'] = "";
+
+  $threaddata = $db->fetch_array($db->simple_select("threads", "*", "tid = '{$forum['lastposttid']}' LIMIT 1"));
+  if ($threaddata['hidescene_readable'] == 0 && $forum['lastposttid'] != 0) {
+    $forum['hidescene'] = " hidescene";
+
+    if ($threaddata['hidescene_readable'] == 0 || ($threaddata['hidescene_readable'] == 2 && $threaddata['hidescene_type'] == 0)) {
+      // echo "forum {$forum['lastposttid']}";
+
+      $forum['hidescene_js'] = "<script type=\"text/javascript\">//Szene komplett löschen
+          var sceneItems = $('.hidescene');
+          var filteredSceneItems = sceneItems.filter(function() {
+          console.log($(this));
+              // Überprüfe, ob der Link innerhalb dieser Div-Box die URL 'tid=X' enthält
+              return $(this).find('a[href*=\"?tid=" . $threaddata['tid'] . "\"]').length > 0;
+          });
+          // über die Div Boxen gehen
+          filteredSceneItems.each(function() {
+          console.log($(this));
+              // Eintrag löschen
+              $(this).html('Geheime Szene');
+          });</script>";
     }
   }
 }
