@@ -708,7 +708,6 @@ function hidescenes_member_profile_end()
           });
           // über die Div Boxen gehen
           filteredSceneItems.each(function() {
-          // console.log($(this).find('a').html());
           var spanContent = $(this).find('a[href*=\"?tid=\"]').html();
           $(this).find('a[href*=\"?tid=\"]').replaceWith('<span class=\"hidescene\">' + spanContent + '</span>');
             });
