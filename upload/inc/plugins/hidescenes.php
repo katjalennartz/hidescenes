@@ -64,13 +64,20 @@ function hidescenes_activate()
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '<a href="{$thread[\'lastpostlink\']}">{$hidewrap_start}{$lang->lastpost}{$hidewrap_end}</a>: {$lastposterlink}</span>');
 
-  find_replace_templatesets("search_results_threads", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
   find_replace_templatesets("index", "#" . preg_quote('{$footer}') . "#i", '{$hidescene_js_overview}{$footer}');
   find_replace_templatesets("forumdisplay", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
 
   //suche
+  find_replace_templatesets("search_results_threads", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
+  find_replace_templatesets("search_results_posts", "#" . preg_quote('{$footer}') . "#i", '{$hidescenes_forumdisplay_js}{$footer}');
+
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '<a href="{$thread[\'lastpostlink\']}">{$hidewrap_start}{$lang->lastpost}{$hidewrap_end}</a>: {$lastposterlink}</span>');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$posted}') . "#i", '{$hidewrap_start}{$posted}{$hidewrap_end}');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$post[\'subject\']}') . "#i", '{$hidewrap_start}{$post[\'subject\']}{$hidewrap_end}');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$post[\'thread_subject\']}') . "#i", '{$hidewrap_start}{$post[\'thread_subject\']}{$hidewrap_end}');
+
 
   //inputs newthread/edit
   find_replace_templatesets("newthread", "#" . preg_quote('{$posticons}') . "#i", '{$hidescenes_newthread}{$posticons}');
@@ -128,10 +135,17 @@ function hidescenes_deactivate()
   find_replace_templatesets("forumdisplay_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
   find_replace_templatesets("forumdisplay", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
   find_replace_templatesets("search_results_threads", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
+  find_replace_templatesets("search_results_posts", "#" . preg_quote('{$hidescenes_forumdisplay_js}') . "#i", '');
+
 
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hiderow}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_start}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
+
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$hiderow}') . "#i", '');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$hidewrap_start}{$posted}{$hidewrap_end}') . "#i", '{$posted}');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$hidewrap_start}{$post[\'subject\']}{$hidewrap_end}') . "#i", '{$post[\'subject\']}');
+  find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$hidewrap_start}{$post[\'thread_subject\']}{$hidewrap_end}') . "#i", '{$post[\'thread_subject\']}');
 
   find_replace_templatesets("newthread", "#" . preg_quote('{$hidescenes_newthread}') . "#i", '');
   find_replace_templatesets("editpost", "#" . preg_quote('{$hidescenes_newthread}') . "#i", '');
@@ -414,7 +428,7 @@ function hidescenes_build_forumbits_forum(&$forum)
   $forum['hidescene'] = "";
 
   $threaddata = $db->fetch_array($db->simple_select("threads", "*", "tid = '{$forum['lastposttid']}' LIMIT 1"));
-  if ($threaddata['hidescene_readable'] == 0 && $forum['lastposttid'] != 0) {
+  if ($threaddata['hidescene_readable'] == 0) {
     $forum['hidescene'] = " hidescene";
 
     if ($threaddata['hidescene_readable'] == 0) {
@@ -430,6 +444,7 @@ function hidescenes_build_forumbits_forum(&$forum)
           // über die Div Boxen gehen
           filteredSceneItems.each(function() {
               // Eintrag löschen
+              
               $(this).html('Geheime Szene');
           });</script>";
     }
@@ -438,15 +453,16 @@ function hidescenes_build_forumbits_forum(&$forum)
 /**
  * Index - Anzeige von verstecken Threads bzw. verstecken im Overview
  **/
-$plugins->add_hook("index_start", "hidescenes_index");
+$plugins->add_hook("index_end", "hidescenes_index");
 function hidescenes_index()
 {
-  global $mybb, $db;
+  global $mybb, $db, $hidescene_js_overview;
+  // $hidescene_js_overview = "test";
   $threaddata_query = $db->simple_select("threads", "*", "hidescene_readable = 0");
   while ($threaddata = $db->fetch_array($threaddata_query)) {
 
     if ($mybb->settings['overview_max']) {
-      $hidescene_js_overview = "<script type=\"text/javascript\">
+      $hidescene_js_overview .= "<script type=\"text/javascript\">
       //Overview threadtitel verstecken
     var sceneItems = $('#overview tr');
     var filteredSceneItems = sceneItems.filter(function() {
@@ -456,7 +472,7 @@ function hidescenes_index()
     // über die Tabelle gehen
     filteredSceneItems.each(function() {
         // Eintrag löschen
-        $(this).html('Geheime Szene');
+              $(this).find('a[href*=\"?tid=" . $threaddata['tid'] . "\"]').parent().html('Geheime Szene');
     });</script>";
     }
   }
@@ -548,16 +564,118 @@ function hidescenes_showthread()
 /**
  * Suchergebnisse verstecken
  **/
-$plugins->add_hook("search_results_thread", "hidescenes_search_results_thread");
-function hidescenes_search_results_thread()
+$plugins->add_hook("search_results_post", "hidescenes_search_results_post");
+function hidescenes_search_results_post()
 {
-  global $thread, $lang, $threads, $mybb, $thread_link, $inline_edit_tid, $gotounread, $lastposterlink, $sceneinfos, $hiderow, $hidewrap_start, $hidewrap_end;
+  global $thread, $db, $post, $posted, $prev, $lang, $thread_url, $highlight, $post_url, $fid, $mybb, $thread_link, $inline_edit_tid, $gotounread, $lastposterlink, $sceneinfos, $hiderow, $hidewrap_start, $hidewrap_end;
 
   $lang->load("hidescenes");
 
   $hidewrap_start = "";
   $hidewrap_end = "";
   $hiderow = "";
+
+  $fid = $post['fid'];
+
+
+  $hidetype = $mybb->settings['hidescenes_type'];
+  // Anzeigen, dass die Szene für einen versteckt ist
+  if ($thread['hidescene_readable'] == 0 && hidescenes_testParentFid($fid)) {
+
+    //Wir wollen immer die Info, dass die Szene versteckt ist
+    $post['subject'] .= $lang->hidescenes_ishidden;
+    $post['thread_subject'] .= $lang->hidescenes_ishidden;
+    //Teilnehmer dürfen immer sehen
+    $thread = $db->fetch_array($db->simple_select("threads", "*", "tid = '{$post['tid']}'"));
+    var_dump($thread);
+    if (!hidescenes_allowed_to_see($thread)) {
+      //komplett verstecken
+      if ($hidetype == 0 || ($hidetype == 2 && $thread['hidescene_type'] == 0)) {
+        //gar nicht zeiten- zum einen verstecken wir die ganze reihe mit display none, 
+        // damit aber keiner pfuschen kann und in den HTML Code schaut, überschreiben wir auch die Variablen.
+        $hiderow = " style=\"display:none;\" ";
+        $thread_link = "#";
+        $gotounread = "";
+        $post['multipage'] = "";
+        $post['thread_subject'] = "";
+        $thread_url = "";
+        $post_url = "";
+        $highlight = "";
+        $post['pid'] = "";
+        $prev = "";
+        $post['profilelink'] = "";
+        $post['forumlink'] = "";
+        $post['tid'] = "";
+        $post['thread_replies'] = "";
+        $posted = "";
+        $post['thread_views'] = "";
+
+        $lastposterlink = "";
+        $inline_edit_tid = "";
+
+        $hidewrap_start = "<span style=\"display:none;\">";
+        $hidewrap_end = "</span>";
+
+        //empty ipt 3.0 and 2.0 sceneinfos ?
+        $post['profilelink'] = "";
+        //empty szenentracker risuena 
+        $sceneinfos = "";
+      }
+      //nur szeneninos anzeigen
+
+      if ($hidetype == 1 || ($hidetype == 2 && $thread['hidescene_type'] == 1)) {
+        //nur szeneninfos zeigen
+        //wir wollen die linkadresse auch verstecken
+        $post['tid'] = "";
+        $thread_link = "#";
+        $thread_url = "";
+        $post_url = "";
+        $prev = "";
+
+
+        $inline_edit_tid = "";
+        $thread['lastpostlink'] = "#";
+        $thread['multipage'] = "";
+
+        //damit man nicht auf den Link klicken kann
+        $hidewrap_start = "<span class=\"hidescene\">";
+        $hidewrap_end = "</span>";
+        //link soll nicht mehr klickbar sein
+        $thread['subject'] = "<span class=\"hidescene\">" . $thread['subject'] . " </span>";
+      }
+    }
+  }
+}
+
+// <script type="text/javascript">
+// 	$('a').has('span.hidescene').each(function() {
+// 		// Holen wir den Inhalt des span-Elements
+// 		var spanContent = $(this).find('span.hidescene').html();
+
+// 		// Ersetzen wir den Link mit dem span-Inhalt
+// 		$(this).replaceWith('<span class="hidescene">' + spanContent + '</span>');
+// 	});
+
+// 	var spanContent = $(this).find('span.hidescene').html();
+
+// 	// Ersetzen wir den Link mit dem span-Inhalt
+// 	$(this).replaceWith('<span class="hidescene">' + spanContent + '</span>');
+// </script>
+
+$plugins->add_hook("search_results_thread", "hidescenes_search_results_thread");
+function hidescenes_search_results_thread()
+{
+  global $thread, $post, $lang, $threads, $fid, $mybb, $thread_link, $inline_edit_tid, $gotounread, $lastposterlink, $sceneinfos, $hiderow, $hidewrap_start, $hidewrap_end;
+
+  $lang->load("hidescenes");
+
+  $hidewrap_start = "";
+  $hidewrap_end = "";
+  $hiderow = "";
+  //wenn das thread array leer ist, sind wir in der search posts, dann brauchen wir das post array
+  if (empty($thread)) {
+    $thread = $post;
+  }
 
   $fid = $thread['fid'];
   $hidetype = $mybb->settings['hidescenes_type'];
