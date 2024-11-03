@@ -73,6 +73,8 @@ function hidescenes_activate()
 
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('<a href="{$thread[\'lastpostlink\']}">{$lang->lastpost}</a>: {$lastposterlink}</span>') . "#i", '<a href="{$thread[\'lastpostlink\']}">{$hidewrap_start}{$lang->lastpost}{$hidewrap_end}</a>: {$lastposterlink}</span>');
+  find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$thread[\'subject\']}') . "#i", '{$hidewrap_start}{$thread[\'subject\']}{$hidewrap_end}');
+
   find_replace_templatesets("search_results_posts_post", "#" . preg_quote('<tr class="inline_row">') . "#i", '<tr class="inline_row"{$hiderow}>');
   find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$posted}') . "#i", '{$hidewrap_start}{$posted}{$hidewrap_end}');
   find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$post[\'subject\']}') . "#i", '{$hidewrap_start}{$post[\'subject\']}{$hidewrap_end}');
@@ -141,6 +143,7 @@ function hidescenes_deactivate()
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hiderow}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_start}') . "#i", '');
   find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_end}') . "#i", '');
+  find_replace_templatesets("search_results_threads_thread", "#" . preg_quote('{$hidewrap_start}{$thread[\'subject\']}{$hidewrap_end}') . "#i", '{$thread[\'subject\']}');
 
   find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$hiderow}') . "#i", '');
   find_replace_templatesets("search_results_posts_post", "#" . preg_quote('{$hidewrap_start}{$posted}{$hidewrap_end}') . "#i", '{$posted}');
